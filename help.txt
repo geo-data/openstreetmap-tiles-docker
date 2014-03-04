@@ -1,0 +1,39 @@
+Usage: run [COMMAND ...]
+
+Run OpenStreetMap Tile Server related operations in a docker container.
+
+Positional arguments:
+  COMMAND          The command to run. (default: help)
+
+Commands:
+  help             Show this help message
+  initdb           Initialise the postgres database
+  startdb          Start the postgresql database
+  createuser       Create the osm user in the database
+  createdb         Create the osm database
+  import           Import osm data into the database
+  startservices    Start the osm web services
+  cli              Drop into a bash shell
+  dropdb           Drop the osm database
+
+Set up a database saved on an external volume:
+  The following command will initialise the postgresql database on an external
+  volume that can be used to persist the data:
+
+  docker run -v /data/osm-postgresql:/var/lib/postgresql homme/openstreetmap-tiles \
+         initdb startdb createuser createdb migrate
+
+Import data:
+  The following will import the .osm file at `/tmp/import.osm` into the
+  database.
+
+  docker run -v /data/osm-postgresql:/var/lib/postgresql -v /tmp:/data homme/openstreetmap-tiles \
+         startdb import
+
+Start the webserver:
+  Once data is loaded and users have been created run the webserver:
+
+  docker run -P -v /data/osm-postgresql:/var/lib/postgresql homme/openstreetmap-tiles \
+         startdb startservices
+
+For further information run the cli and look at /usr/local/share/doc/README.md.
