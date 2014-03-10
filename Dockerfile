@@ -40,8 +40,7 @@ RUN cd /tmp/osm2pgsql && \
 # Install the Mapnik library
 RUN cd /tmp && git clone git://github.com/mapnik/mapnik
 RUN cd /tmp/mapnik && \
-    git branch 2.0 origin/2.0.x && \
-    git checkout 2.0 && \
+    git checkout 2.2.x && \
     python scons/scons.py configure INPUT_PLUGINS=all OPTIMIZATION=3 SYSTEM_FONTS=/usr/share/fonts/truetype/ && \
     python scons/scons.py && \
     python scons/scons.py install && \
