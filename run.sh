@@ -85,10 +85,10 @@ cli () {
 }
 
 startrenderd () {
-    if [ ! -e /etc/service/renderd ]
+    if ! update-service --check renderd
     then
         echo "Starting renderd"
-        ln -s /etc/sv/renderd /etc/service/ || die "Could not link renderd into runit"
+        update-service --add /etc/sv/renderd || die "Could not add renderd as a runit service"
     else
         echo "Starting renderd"
         sv start renderd || die "Could not start renderd"
@@ -98,11 +98,8 @@ startrenderd () {
 startservices () {
     startrenderd
 
-    if ! pgrep apache2 > /dev/null
-    then
-        echo "Starting web server"
-        service apache2 start || die "Could not start apache"
-    fi
+    echo "Starting web server"
+    sv start apache2 || die "Could not start apache"
 }
 
 help () {

@@ -96,9 +96,12 @@ RUN sed --file /tmp/postgresql.conf.sed --in-place /etc/postgresql/9.1/main/post
 RUN mkdir -p /etc/my_init.d
 ADD shmmax.sh /etc/my_init.d/shmmax.sh
 
+# Create an `apache2` `runit` service
+ADD apache2 /etc/sv/apache2
+RUN update-service --add /etc/sv/apache2
+
 # Create a `renderd` `runit` service
-RUN mkdir /etc/sv/renderd
-ADD renderd.sh /etc/sv/renderd/run
+ADD renderd /etc/sv/renderd
 
 # Clean up APT when done
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
