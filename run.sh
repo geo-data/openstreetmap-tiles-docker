@@ -13,12 +13,12 @@ die () {
     exit
 }
 
+_startservice () {
+    sv start $1 || die "Could not start $1"
+}
+
 startdb () {
-    if ! pgrep postgres > /dev/null
-    then
-        chown -R postgres /var/lib/postgresql/ || die "Could not set permissions on /var/lib/postgresql"
-        service postgresql start || die "Could not start postgresql"
-    fi
+    _startservice postgresql
 }
 
 initdb () {
@@ -84,27 +84,33 @@ cli () {
     exec bash
 }
 
-startrenderd () {
-    if ! update-service --check renderd
-    then
-        echo "Starting renderd"
-        update-service --add /etc/sv/renderd || die "Could not add renderd as a runit service"
-    else
-        echo "Starting renderd"
-        sv start renderd || die "Could not start renderd"
-    fi
-}
-
 startservices () {
-    startrenderd
-
-    echo "Starting web server"
-    sv start apache2 || die "Could not start apache"
+    _startservice renderd
+    _startservice apache2
 }
 
 help () {
     cat /usr/local/share/doc/run/help.txt
 }
+
+_wait () {
+    WAIT=$1
+    NOW=`date +%s`
+    BOOT_TIME=`stat -c %X /etc/container_environment.sh`
+    UPTIME=`expr $NOW - $BOOT_TIME`
+    DELTA=`expr 5 - $UPTIME`
+    if [ $DELTA -gt 0 ]
+    then
+	sleep $DELTA
+    fi
+}
+
+# Unless there is a terminal attached wait until 5 seconds after boot
+# when runit will have started supervising the services.
+if ! tty --silent
+then
+    _wait 5
+fi
 
 # Execute the specified command sequence
 for arg 

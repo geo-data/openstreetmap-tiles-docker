@@ -1,0 +1,14 @@
+#!/bin/sh
+
+##
+# Runit check script for postgresql
+#
+# This script loops infinitely until it sees the 4 postgres pids
+#
+
+pid_count=0
+while [ "$pid_count" -lt 3 ]
+do
+    sleep 1
+    pid_count=`pidof postgres | grep -o ' ' | wc -l`
+done

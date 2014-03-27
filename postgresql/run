@@ -1,0 +1,13 @@
+#!/bin/sh
+
+##
+# Runit run script for postgresql
+#
+
+# If the database has been persisted in a volume, it may need
+# permissions setting.
+chown -R postgres /var/lib/postgresql/ || exit 1
+
+exec /sbin/setuser postgres /usr/lib/postgresql/9.1/bin/postgres \
+    -D /var/lib/postgresql/9.1/main \
+    -c config_file=/etc/postgresql/9.1/main/postgresql.conf

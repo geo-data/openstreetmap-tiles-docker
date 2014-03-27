@@ -8,7 +8,7 @@
 # <http://switch2osm.org/serving-tiles/manually-building-a-tile-server-12-04/>.
 #
 
-FROM phusion/baseimage:0.9.8
+FROM phusion/baseimage:0.9.9
 MAINTAINER Homme Zwaagstra <hrz@geodata.soton.ac.uk>
 
 # Set the locale. This affects the encoding of the Postgresql template
@@ -17,6 +17,7 @@ ENV LANG C.UTF-8
 RUN update-locale LANG=C.UTF-8
 
 # Ensure `add-apt-repository` is present
+RUN apt-get update -y
 RUN apt-get install -y software-properties-common python-software-properties
 
 # Mapnik requires a recent version of Boost
@@ -96,12 +97,17 @@ RUN sed --file /tmp/postgresql.conf.sed --in-place /etc/postgresql/9.1/main/post
 RUN mkdir -p /etc/my_init.d
 ADD shmmax.sh /etc/my_init.d/shmmax.sh
 
+# Create a `postgresql` `runit` service
+ADD postgresql /etc/sv/postgresql
+RUN update-service --add /etc/sv/postgresql
+
 # Create an `apache2` `runit` service
 ADD apache2 /etc/sv/apache2
 RUN update-service --add /etc/sv/apache2
 
 # Create a `renderd` `runit` service
 ADD renderd /etc/sv/renderd
+RUN update-service --add /etc/sv/renderd
 
 # Clean up APT when done
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
