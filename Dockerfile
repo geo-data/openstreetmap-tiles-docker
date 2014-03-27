@@ -97,6 +97,10 @@ RUN sed --file /tmp/postgresql.conf.sed --in-place /etc/postgresql/9.1/main/post
 RUN mkdir -p /etc/my_init.d
 ADD shmmax.sh /etc/my_init.d/shmmax.sh
 
+# Define the application logging logic
+ADD syslog-ng.conf /etc/syslog-ng/conf.d/local.conf
+RUN rm -rf /var/log/postgresql
+
 # Create a `postgresql` `runit` service
 ADD postgresql /etc/sv/postgresql
 RUN update-service --add /etc/sv/postgresql
