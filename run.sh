@@ -68,7 +68,7 @@ import () {
     echo "$OSM_IMPORT_CACHE" | grep -P '^[0-9]+$' || \
         die "Unexpected cache type: expected an integer but found: ${OSM_IMPORT_CACHE}"
 
-    number_processes=`nproc`
+    number_processes=8
     $asweb osm2pgsql --slim --cache $OSM_IMPORT_CACHE --database gis --number-processes $number_processes $import
 }
 
