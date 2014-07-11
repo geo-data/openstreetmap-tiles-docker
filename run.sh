@@ -23,15 +23,15 @@ startdb () {
 
 initdb () {
     echo "Initialising postgresql"
-    if [ -d /var/lib/postgresql/9.1/main ] && [ $( ls -A /var/lib/postgresql/9.1/main | wc -c ) -ge 0 ]
+    if [ -d /var/lib/postgresql/9.3/main ] && [ $( ls -A /var/lib/postgresql/9.3/main | wc -c ) -ge 0 ]
     then
-        die "Initialisation failed: the directory is not empty: /var/lib/postgresql/9.1/main"
+        die "Initialisation failed: the directory is not empty: /var/lib/postgresql/9.3/main"
     fi
 
-    mkdir -p /var/lib/postgresql/9.1/main && chown -R postgres /var/lib/postgresql/
-    sudo -u postgres -i /usr/lib/postgresql/9.1/bin/initdb --pgdata /var/lib/postgresql/9.1/main
-    ln -s /etc/ssl/certs/ssl-cert-snakeoil.pem /var/lib/postgresql/9.1/main/server.crt
-    ln -s /etc/ssl/private/ssl-cert-snakeoil.key /var/lib/postgresql/9.1/main/server.key
+    mkdir -p /var/lib/postgresql/9.3/main && chown -R postgres /var/lib/postgresql/
+    sudo -u postgres -i /usr/lib/postgresql/9.3/bin/initdb --pgdata /var/lib/postgresql/9.3/main
+    ln -s /etc/ssl/certs/ssl-cert-snakeoil.pem /var/lib/postgresql/9.3/main/server.crt
+    ln -s /etc/ssl/private/ssl-cert-snakeoil.key /var/lib/postgresql/9.3/main/server.key
 }
 
 createuser () {
@@ -49,7 +49,7 @@ createdb () {
     setuser postgres createdb -O www-data $dbname
 
     # Install the Postgis schema
-    $asweb psql -d $dbname -f /usr/share/postgresql/9.1/contrib/postgis-1.5/postgis.sql
+    $asweb psql -d $dbname -f /usr/share/postgresql/9.3/contrib/postgis-2.1/postgis.sql
 
     # Set the correct table ownership
     $asweb psql -d $dbname -c 'ALTER TABLE geometry_columns OWNER TO "www-data"; ALTER TABLE spatial_ref_sys OWNER TO "www-data";'
@@ -68,7 +68,10 @@ import () {
     echo "$OSM_IMPORT_CACHE" | grep -P '^[0-9]+$' || \
         die "Unexpected cache type: expected an integer but found: ${OSM_IMPORT_CACHE}"
 
-    number_processes=`nproc`
+    number_processes=`nproc`;
+    if test $number_processes -ge 8; then # Limit to 8 to prevent overwhelming pg with connections
+        number_processes=8;
+    fi
     $asweb osm2pgsql --slim --cache $OSM_IMPORT_CACHE --database gis --number-processes $number_processes $import
 }
 

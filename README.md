@@ -16,11 +16,11 @@ Run `docker run homme/openstreetmap-tiles` for usage instructions.
 
 ## About
 
-The container runs Ubuntu 12.04 (Precise) and is based on the
+The container runs Ubuntu 14.04 (Trusty) and is based on the
 [phusion/baseimage-docker](https://github.com/phusion/baseimage-docker).  It
 includes:
 
-* Postgresql 9.1
+* Postgresql 9.3
 * Apache 2.2
 * The latest [Osm2pgsql](http://wiki.openstreetmap.org/wiki/Osm2pgsql) code (at
   the time of image creation)
