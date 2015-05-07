@@ -51,6 +51,8 @@ createdb () {
     # Install the Postgis schema
     $asweb psql -d $dbname -f /usr/share/postgresql/9.3/contrib/postgis-2.1/postgis.sql
 
+    $asweb psql -d $dbname -c 'CREATE EXTENSION HSTORE;'
+
     # Set the correct table ownership
     $asweb psql -d $dbname -c 'ALTER TABLE geometry_columns OWNER TO "www-data"; ALTER TABLE spatial_ref_sys OWNER TO "www-data";'
 
@@ -76,7 +78,7 @@ import () {
         number_processes=8
     fi
 
-    $asweb osm2pgsql --slim --cache $OSM_IMPORT_CACHE --database gis --number-processes $number_processes $import
+    $asweb osm2pgsql --slim --hstore --cache $OSM_IMPORT_CACHE --database gis --number-processes $number_processes $import
 }
 
 dropdb () {
