@@ -80,6 +80,9 @@ RUN cd /usr/local/etc && sed --file /tmp/renderd.conf.sed --in-place renderd.con
 RUN mkdir /var/run/renderd && chown www-data: /var/run/renderd
 RUN mkdir /var/lib/mod_tile && chown www-data /var/lib/mod_tile
 
+# Replace default apache index page with OpenLayers demo
+ADD index.html /var/www/html/index.html
+
 # Configure mod_tile
 ADD mod_tile.load /etc/apache2/mods-available/
 ADD mod_tile.conf /etc/apache2/mods-available/
