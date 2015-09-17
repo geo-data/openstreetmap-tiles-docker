@@ -56,8 +56,9 @@ createdb () {
     # Set the correct table ownership
     $asweb psql -d $dbname -c 'ALTER TABLE geometry_columns OWNER TO "www-data"; ALTER TABLE spatial_ref_sys OWNER TO "www-data";'
 
-    # Add the 900913 Spatial Reference System
-    $asweb psql -d $dbname -f /usr/local/share/osm2pgsql/900913.sql
+    $asweb psql -d $dbname -f spatial_ref_sys.sql
+    
+    
 }
 
 import () {
