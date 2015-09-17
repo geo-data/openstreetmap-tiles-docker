@@ -56,6 +56,9 @@ createdb () {
     # Set the correct table ownership
     $asweb psql -d $dbname -c 'ALTER TABLE geometry_columns OWNER TO "www-data"; ALTER TABLE spatial_ref_sys OWNER TO "www-data";'
 
+    $asweb psql -d $dbname -f spatial_ref_sys.sql
+    
+    
 }
 
 import () {
