@@ -118,7 +118,7 @@ EXPOSE 80 5432
 VOLUME ["/data"]
 
 # Set the osm2pgsql import cache size in MB. Used in `run import`.
-ENV OSM_IMPORT_CACHE 800
+ENV OSM_IMPORT_CACHE 4000
 
 # Add the README
 ADD README.md /usr/local/share/doc/
