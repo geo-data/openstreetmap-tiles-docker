@@ -9,7 +9,7 @@
 #
 
 FROM phusion/baseimage:0.9.11
-MAINTAINER Homme Zwaagstra <hrz@geodata.soton.ac.uk>
+MAINTAINER Erik Johnson <erik@erikj.me>
 
 # Set the locale. This affects the encoding of the Postgresql template
 # databases.
