@@ -8,7 +8,7 @@
 # <http://switch2osm.org/serving-tiles/manually-building-a-tile-server-12-04/>.
 #
 
-FROM phusion/baseimage:0.9.11
+FROM phusion/baseimage:0.9.17
 MAINTAINER Erik Johnson <erik@erikj.me>
 
 # Set the locale. This affects the encoding of the Postgresql template
