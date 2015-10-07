@@ -12,7 +12,7 @@ also provides instructions for managing the back end database, allowing you to:
 * Import OSM data into the database
 * Drop the database
 
-Run `docker run homme/openstreetmap-tiles` for usage instructions.
+Run `docker run erikj/osm-tiles` for usage instructions.
 
 ## About
 
@@ -32,5 +32,5 @@ includes:
 
 This is a work in progress and although generally adequate it could benefit
 from improvements.  Please
-[submit issues](https://github.com/geo-data/openstreetmap-tiles-docker/issues)
+[submit issues](https://github.com/erikj/openstreetmap-tiles-docker/issues)
 on GitHub. Pull requests are very welcome!
