@@ -24,8 +24,8 @@ Set up a database saved on an external volume:
          initdb startdb createuser createdb migrate
 
 Import data:
-  The following will import the .osm file at `/tmp/import.osm` into the
-  database.
+  The following will import the file at `/data/import.pbf` or `/data/import.osm`
+  into the database.
 
   docker run -v /data/osm-postgresql:/var/lib/postgresql -v /tmp:/data homme/openstreetmap-tiles \
          startdb import
