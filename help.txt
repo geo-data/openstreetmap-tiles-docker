@@ -21,10 +21,10 @@ Set up a database saved on an external volume:
   volume that can be used to persist the data:
 
   docker run -v /data/osm-postgresql:/var/lib/postgresql homme/openstreetmap-tiles \
-         initdb startdb createuser createdb migrate
+         initdb startdb createuser createdb
 
 Import data:
-  The following will import the .osm file at `/tmp/import.osm` into the
+  The following will import the .pbf file at `/tmp/import.pbf` into the
   database.
 
   docker run -v /data/osm-postgresql:/var/lib/postgresql -v /tmp:/data homme/openstreetmap-tiles \
