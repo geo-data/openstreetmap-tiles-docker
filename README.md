@@ -35,5 +35,5 @@ includes:
 
 This is a work in progress and although generally adequate it could benefit
 from improvements.  Please
-[submit issues](https://github.com/geo-data/openstreetmap-tiles-docker/issues)
+[submit issues](https://github.com/haroldship/openstreetmap-tiles-docker/issues)
 on GitHub. Pull requests are very welcome!
