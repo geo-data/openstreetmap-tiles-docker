@@ -29,12 +29,16 @@ These instructions are for **linux only**, and assume that Docker is up and runn
     * Importing
     * Running
 
-7. Initialize: *It is important to get the path to the PostgreSQL data directory correct.*
+7. Initialize:
+*It is important to get the path to the PostgreSQL data directory correct.*
 
     mkdir data
-    docker run -v $PWD/data:/var/lib/postgresql -it haroldship/openstreetmap-tiles-docker initdb startdb createuser createdb
+    docker run -v $PWD/data:/var/lib/postgresql -it haroldship/openstreetmap-tiles-docker \
+        initdb startdb createuser createdb
 
-8. Import: *It is important to get the path to the import directory correct.*
+8. Import: 
+*It is important to get the path to the import directory correct.*
+*This step can take a long time, depending on how large a database you are importing.*
 
     docker run -v $PWD/import:/data -v $PWD/data:/var/lib/postgresql \
         -it haroldship/openstreetmap-tiles-docker startdb import
