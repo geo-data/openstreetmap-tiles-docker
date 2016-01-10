@@ -33,7 +33,8 @@ These instructions are for **linux only**, and assume that Docker is up and runn
 *It is important to get the path to the PostgreSQL data directory correct.*
 
     mkdir data
-    docker run -v $PWD/data:/var/lib/postgresql -it haroldship/openstreetmap-tiles-docker \
+    docker run -v $PWD/data:/var/lib/postgresql \
+        -it haroldship/openstreetmap-tiles-docker \
         initdb startdb createuser createdb
 
 8. Import: 
@@ -46,4 +47,4 @@ These instructions are for **linux only**, and assume that Docker is up and runn
 9. Start the services.
 
     docker run -v $PWD/data:/var/lib/postgresql \
-        -b haroldship/openstreetmap-tiles-docker startdb startservices
+        -d -P haroldship/openstreetmap-tiles-docker startdb startservices
