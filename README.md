@@ -3,7 +3,9 @@
 This repository contains instructions for building a
 [Docker](https://www.docker.io/) image containing the OpenStreetMap tile
 serving software stack.  It is based on the
-[Switch2OSM instructions](http://switch2osm.org/serving-tiles/manually-building-a-tile-server-12-04/).
+[Switch2OSM instructions](http://switch2osm.org/serving-tiles/manually-building-a-tile-server-14-04/).
+
+The tiles are styled using [OSM Bright](https://github.com/mapbox/osm-bright/).
 
 As well as providing an easy way to set up and run the tile serving software it
 also provides instructions for managing the back end database, allowing you to:
@@ -12,7 +14,7 @@ also provides instructions for managing the back end database, allowing you to:
 * Import OSM data into the database
 * Drop the database
 
-Run `docker run homme/openstreetmap-tiles` for usage instructions.
+Run `docker run haroldship/openstreetmap-tiles-docker` for usage instructions.
 
 ## About
 
@@ -22,10 +24,11 @@ includes:
 
 * Postgresql 9.3
 * Apache 2.2
-* The latest [Osm2pgsql](http://wiki.openstreetmap.org/wiki/Osm2pgsql) code (at
-  the time of image creation)
+* [Osm2pgsql](http://wiki.openstreetmap.org/wiki/Osm2pgsql) from Oct 22 (24e4d4bf273aaf3572fda11d2c0b32aa3156f84a)
 * The latest [Mapnik](http://mapnik.org/) code (at the time of image creation)
 * The latest [Mod_Tile](http://wiki.openstreetmap.org/wiki/Mod_tile) code (at
+  the time of image creation)
+* The latest [OSM Bright](https://github.com/mapbox/osm-bright/) code (at the
   the time of image creation)
 
 ## Issues
