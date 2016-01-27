@@ -9,7 +9,7 @@ asweb="setuser www-data"
 
 die () {
     msg=$1
-    echo "FATAL ERROR: "$msg >&2
+    echo "FATAL ERROR: $msg" >&2
     exit
 }
 
@@ -27,7 +27,19 @@ initdb () {
     then
         die "Initialisation failed: the directory is not empty: /var/lib/postgresql/9.3/main"
     fi
+    _initdb
+}
 
+forceinitdb() {
+    echo "Initialising postgresql by FORCE"
+    if [ -d /var/lib/postgresql/9.3/main ] && [ $( ls -A /var/lib/postgresql/9.3/main | wc -c ) -ge 0 ]
+    then
+        rm -rf /var/lib/postgresql/9.3/main/*
+    fi
+    _initdb
+}
+
+_initdb() {
     mkdir -p /var/lib/postgresql/9.3/main && chown -R postgres /var/lib/postgresql/
     sudo -u postgres -i /usr/lib/postgresql/9.3/bin/initdb --pgdata /var/lib/postgresql/9.3/main
     ln -s /etc/ssl/certs/ssl-cert-snakeoil.pem /var/lib/postgresql/9.3/main/server.crt
