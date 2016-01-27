@@ -20,20 +20,20 @@ Set up a database saved on an external volume:
   The following command will initialise the postgresql database on an external
   volume that can be used to persist the data:
 
-  docker run -v /data/osm-postgresql:/var/lib/postgresql homme/openstreetmap-tiles \
-         initdb startdb createuser createdb migrate
+  docker run -v /data/osm-postgresql:/var/lib/postgresql haroldship/openstreetmap-tiles-docker \
+         initdb startdb createuser createdb
 
 Import data:
-  The following will import the .osm file at `/tmp/import.osm` into the
+  The following will import the .pbf file at `/tmp/import.pbf` into the
   database.
 
-  docker run -v /data/osm-postgresql:/var/lib/postgresql -v /tmp:/data homme/openstreetmap-tiles \
+  docker run -v /data/osm-postgresql:/var/lib/postgresql -v /tmp:/data haroldship/openstreetmap-tiles-docker \
          startdb import
 
 Start the webserver:
   Once data is loaded and users have been created run the webserver:
 
-  docker run -P -v /data/osm-postgresql:/var/lib/postgresql homme/openstreetmap-tiles \
+  docker run -P -v /data/osm-postgresql:/var/lib/postgresql haroldship/openstreetmap-tiles-docker \
          startdb startservices
 
 For further information run the cli and look at /usr/local/share/doc/README.md.

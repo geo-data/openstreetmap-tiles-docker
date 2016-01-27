@@ -1,15 +1,17 @@
-## -*- docker-image-name: "homme/openstreetmap-tiles:latest" -*-
+## -*- docker-image-name: "haroldship/openstreetmap-tiles:latest" -*-
 
 ##
 # The OpenStreetMap Tile Server
 #
 # This creates an image with containing the OpenStreetMap tile server stack as
 # described at
-# <http://switch2osm.org/serving-tiles/manually-building-a-tile-server-12-04/>.
+# <https://switch2osm.org/serving-tiles/manually-building-a-tile-server-14-04/>.
+#
+# Based on homme/openstreetmap-tiles Homme Zwaagstra <hrz@geodata.soton.ac.uk>
 #
 
-FROM phusion/baseimage:0.9.11
-MAINTAINER Homme Zwaagstra <hrz@geodata.soton.ac.uk>
+FROM phusion/baseimage:0.9.18
+MAINTAINER Harold Ship <harold@il.ibm.com>
 
 # Set the locale. This affects the encoding of the Postgresql template
 # databases.
@@ -33,6 +35,7 @@ RUN apt-get install -y postgresql-9.3-postgis-2.1 postgresql-contrib postgresql-
 # Install osm2pgsql
 RUN cd /tmp && git clone git://github.com/openstreetmap/osm2pgsql.git
 RUN cd /tmp/osm2pgsql && \
+    git checkout 24e4d4bf273aaf3572fda11d2c0b32aa3156f84a && \
     ./autogen.sh && \
     ./configure && \
     make && make install
@@ -60,17 +63,59 @@ RUN cd /tmp/mod_tile && \
     ldconfig
 
 # Install the Mapnik stylesheet
-RUN cd /usr/local/src && svn co http://svn.openstreetmap.org/applications/rendering/mapnik mapnik-style
+#RUN cd /usr/local/src && svn co http://svn.openstreetmap.org/applications/rendering/mapnik mapnik-style
 
 # Install the coastline data
-RUN cd /usr/local/src/mapnik-style && ./get-coastlines.sh /usr/local/share
+#RUN cd /usr/local/src/mapnik-style && ./get-coastlines.sh /usr/local/share
 
 # Configure mapnik style-sheets
-RUN cd /usr/local/src/mapnik-style/inc && cp fontset-settings.xml.inc.template fontset-settings.xml.inc
-ADD datasource-settings.sed /tmp/
-RUN cd /usr/local/src/mapnik-style/inc && sed --file /tmp/datasource-settings.sed  datasource-settings.xml.inc.template > datasource-settings.xml.inc
-ADD settings.sed /tmp/
-RUN cd /usr/local/src/mapnik-style/inc && sed --file /tmp/settings.sed  settings.xml.inc.template > settings.xml.inc
+#RUN cd /usr/local/src/mapnik-style/inc && cp fontset-settings.xml.inc.template fontset-settings.xml.inc
+#ADD datasource-settings.sed /tmp/
+#RUN cd /usr/local/src/mapnik-style/inc && sed --file /tmp/datasource-settings.sed  datasource-settings.xml.inc.template > datasource-settings.xml.inc
+#ADD settings.sed /tmp/
+#RUN cd /usr/local/src/mapnik-style/inc && sed --file /tmp/settings.sed  settings.xml.inc.template > settings.xml.inc
+
+# Install node-carto to compile CartoCSS
+RUN apt-get install -y node-carto
+
+# Download OSM Bright sources and polygons
+RUN mkdir -p /usr/local/share/maps/style && \
+    chmod a+rx /usr/local/share/maps/style && \
+    cd /usr/local/share/maps/style && \
+    wget https://github.com/mapbox/osm-bright/archive/master.zip && \
+    wget http://data.openstreetmapdata.com/simplified-land-polygons-complete-3857.zip && \
+    wget http://data.openstreetmapdata.com/land-polygons-split-3857.zip && \
+    wget http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_populated_places_simple.zip
+
+# Unpack the OSM Bright sources and polygons
+RUN cd /usr/local/share/maps/style && \
+    unzip '*.zip' && \
+    mkdir osm-bright-master/shp && \
+    mv land-polygons-split-3857 osm-bright-master/shp && \
+    mv simplified-land-polygons-complete-3857 osm-bright-master/shp && \
+    mkdir ne_10m_populated_places_simple && \
+    mv ne_10m_populated_places_simple.* ne_10m_populated_places_simple && \
+    mv ne_10m_populated_places_simple osm-bright-master/shp/
+
+# Create shapeindices for polygons
+RUN cd /usr/local/share/maps/style/osm-bright-master/shp/land-polygons-split-3857 && shapeindex land_polygons.shp
+RUN cd /usr/local/share/maps/style/osm-bright-master/shp/simplified-land-polygons-complete-3857 && shapeindex simplified_land_polygons.shp
+
+# Configure OSM Bright style sheet
+ADD osm-bright.osm2pgsql.sed /tmp/
+RUN cd /usr/local/share/maps/style/osm-bright-master/osm-bright && \
+    sed --file /tmp/osm-bright.osm2pgsql.sed --in-place osm-bright.osm2pgsql.mml
+ADD configure.py.sed /tmp/
+RUN cd /usr/local/share/maps/style/osm-bright-master && \
+    sed --file /tmp/configure.py.sed configure.py.sample > configure.py
+
+# Build the OSM Bright style sheet in cartocss
+RUN cd /usr/local/share/maps/style/osm-bright-master && \
+    ./make.py
+
+# Build the OSM Bright style sheet in mapnik format
+RUN cd /usr/local/share/maps/style/OSMBright && \
+    carto project.mml > OSMBright.xml
 
 # Configure renderd
 ADD renderd.conf.sed /tmp/
