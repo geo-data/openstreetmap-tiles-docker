@@ -9,7 +9,7 @@ asweb="setuser www-data"
 
 die () {
     msg=$1
-    echo "FATAL ERROR: " msg > 2
+    echo "FATAL ERROR: "$msg >&2
     exit
 }
 
