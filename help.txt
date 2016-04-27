@@ -36,4 +36,10 @@ Start the webserver:
   docker run -P -v /data/osm-postgresql:/var/lib/postgresql homme/openstreetmap-tiles \
          startdb startservices
 
+Use the cli:
+  To use the cli you can run:
+  
+  docker run -it homme/openstretmap-tiles cli
+
+
 For further information run the cli and look at /usr/local/share/doc/README.md.
