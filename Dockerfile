@@ -8,46 +8,36 @@
 # <http://switch2osm.org/serving-tiles/manually-building-a-tile-server-12-04/>.
 #
 
-FROM phusion/baseimage:0.9.11
+FROM phusion/baseimage:latest
 MAINTAINER Homme Zwaagstra <hrz@geodata.soton.ac.uk>
 
 # Set the locale. This affects the encoding of the Postgresql template
 # databases.
 ENV LANG C.UTF-8
+ENV DEBIAN_FRONTEND=noninteractive
 RUN update-locale LANG=C.UTF-8
 
-# Ensure `add-apt-repository` is present
-RUN apt-get update -y
-RUN apt-get install -y software-properties-common python-software-properties
 
-RUN apt-get install -y libboost-dev libboost-filesystem-dev libboost-program-options-dev libboost-python-dev libboost-regex-dev libboost-system-dev libboost-thread-dev
-
-# Install remaining dependencies
-RUN apt-get install -y subversion git-core tar unzip wget bzip2 build-essential autoconf libtool libxml2-dev libgeos-dev libpq-dev libbz2-dev munin-node munin libprotobuf-c0-dev protobuf-c-compiler libfreetype6-dev libpng12-dev libtiff4-dev libicu-dev libgdal-dev libcairo-dev libcairomm-1.0-dev apache2 apache2-dev libagg-dev liblua5.2-dev ttf-unifont
-
-RUN apt-get install -y autoconf apache2-dev libtool libxml2-dev libbz2-dev libgeos-dev libgeos++-dev libproj-dev gdal-bin libgdal1-dev mapnik-utils python-mapnik libmapnik-dev
-
-# Install postgresql and postgis
-RUN apt-get install -y postgresql-9.3-postgis-2.1 postgresql-contrib postgresql-server-dev-9.3
+# install needed packages & mapnik
+RUN apt-get -y update && \
+    apt-get -y install libboost-all-dev git-core tar unzip wget bzip2 build-essential autoconf libtool libxml2-dev libgeos-dev libgeos++-dev libpq-dev libbz2-dev libproj-dev munin-node munin libprotobuf-c0-dev protobuf-c-compiler libfreetype6-dev libpng12-dev libtiff5-dev libicu-dev libgdal-dev libcairo-dev libcairomm-1.0-dev apache2 apache2-dev libagg-dev liblua5.2-dev ttf-unifont lua5.1 liblua5.1-dev libgeotiff-epsg sudo && \
+    apt-get -y install postgresql postgresql-contrib postgis postgresql-9.5-postgis-2.2 && \
+    apt-get -y install make cmake g++ libboost-dev libboost-system-dev libboost-filesystem-dev libexpat1-dev zlib1g-dev libbz2-dev libpq-dev libgeos-dev libgeos++-dev libproj-dev lua5.2 liblua5.2-dev && \
+    apt-get -y install autoconf apache2-dev libtool libxml2-dev libbz2-dev libgeos-dev libgeos++-dev libproj-dev gdal-bin libgdal1-dev libmapnik-dev mapnik-utils python-mapnik && \
+    apt-get -y install npm nodejs-legacy && \
+    apt-get -y install fonts-noto && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /usr/share/doc && \
+    rm -rf /usr/share/man
+    
 
 # Install osm2pgsql
-RUN cd /tmp && git clone git://github.com/openstreetmap/osm2pgsql.git
-RUN cd /tmp/osm2pgsql && \
-    ./autogen.sh && \
-    ./configure && \
-    make && make install
-
-# Install the Mapnik library
-RUN cd /tmp && git clone git://github.com/mapnik/mapnik
-RUN cd /tmp/mapnik && \
-    git checkout 2.2.x && \
-    python scons/scons.py configure INPUT_PLUGINS=all OPTIMIZATION=3 SYSTEM_FONTS=/usr/share/fonts/truetype/ && \
-    python scons/scons.py && \
-    python scons/scons.py install && \
-    ldconfig
-
-# Verify that Mapnik has been installed correctly
-RUN python -c 'import mapnik'
+RUN cd /tmp && git clone git://github.com/openstreetmap/osm2pgsql.git && \
+    cd /tmp/osm2pgsql && \
+    mkdir build && cd build && \
+    cmake .. && \
+    make && make install && \
+    cd /tmp && rm -rf /tmp/osm2pgsql
 
 # Install mod_tile and renderd
 RUN cd /tmp && git clone git://github.com/openstreetmap/mod_tile.git
@@ -57,20 +47,19 @@ RUN cd /tmp/mod_tile && \
     make && \
     make install && \
     make install-mod_tile && \
-    ldconfig
+    ldconfig && \
+    cd /tmp && rm -rf /tmp/mod_tile
 
 # Install the Mapnik stylesheet
-RUN cd /usr/local/src && svn co http://svn.openstreetmap.org/applications/rendering/mapnik mapnik-style
+RUN cd /usr/local/src && git clone git://github.com/gravitystorm/openstreetmap-carto.git
+RUN cd /usr/local/src/openstreetmap-carto && \
+    npm install -g carto && \
+    carto project.mml > mapnik.xml
 
 # Install the coastline data
-RUN cd /usr/local/src/mapnik-style && ./get-coastlines.sh /usr/local/share
-
-# Configure mapnik style-sheets
-RUN cd /usr/local/src/mapnik-style/inc && cp fontset-settings.xml.inc.template fontset-settings.xml.inc
-ADD datasource-settings.sed /tmp/
-RUN cd /usr/local/src/mapnik-style/inc && sed --file /tmp/datasource-settings.sed  datasource-settings.xml.inc.template > datasource-settings.xml.inc
-ADD settings.sed /tmp/
-RUN cd /usr/local/src/mapnik-style/inc && sed --file /tmp/settings.sed  settings.xml.inc.template > settings.xml.inc
+RUN cd /usr/local/src/openstreetmap-carto && \
+    scripts/get-shapefiles.py && \
+    rm -f /usr/local/src/openstreetmap-carto/data/*zip 
 
 # Configure renderd
 ADD renderd.conf.sed /tmp/
@@ -86,11 +75,11 @@ ADD mod_tile.conf /etc/apache2/mods-available/
 RUN a2enmod mod_tile
 
 # Ensure the webserver user can connect to the gis database
-RUN sed -i -e 's/local   all             all                                     peer/local gis www-data peer/' /etc/postgresql/9.3/main/pg_hba.conf
+RUN sed -i -e 's/local   all             all                                     peer/local gis www-data peer/' /etc/postgresql/9.5/main/pg_hba.conf
 
 # Tune postgresql
 ADD postgresql.conf.sed /tmp/
-RUN sed --file /tmp/postgresql.conf.sed --in-place /etc/postgresql/9.3/main/postgresql.conf
+RUN sed --file /tmp/postgresql.conf.sed --in-place /etc/postgresql/9.5/main/postgresql.conf
 
 # Define the application logging logic
 ADD syslog-ng.conf /etc/syslog-ng/conf.d/local.conf
@@ -108,9 +97,6 @@ RUN update-service --add /etc/sv/apache2
 ADD renderd /etc/sv/renderd
 RUN update-service --add /etc/sv/renderd
 
-# Clean up APT when done
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
 # Expose the webserver and database ports
 EXPOSE 80 5432
 
@@ -127,6 +113,8 @@ ADD README.md /usr/local/share/doc/
 RUN mkdir -p /usr/local/share/doc/run
 ADD help.txt /usr/local/share/doc/run/help.txt
 
+#add demo page for testing
+ADD map.html /var/www/html/index.html
 # Add the entrypoint
 ADD run.sh /usr/local/sbin/run
 ENTRYPOINT ["/sbin/my_init", "--", "/usr/local/sbin/run"]

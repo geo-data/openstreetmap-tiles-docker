@@ -27,13 +27,19 @@ Import data:
   The following will import the .osm file at `/tmp/import.osm` into the
   database.
 
-  docker run -v /data/osm-postgresql:/var/lib/postgresql -v /tmp:/data homme/openstreetmap-tiles \
+  docker run --rm -v /data/osm-postgresql:/var/lib/postgresql -v /tmp:/data/import homme/openstreetmap-tiles \
          startdb import
 
 Start the webserver:
   Once data is loaded and users have been created run the webserver:
 
-  docker run -P -v /data/osm-postgresql:/var/lib/postgresql homme/openstreetmap-tiles \
+  docker run --rm -P -v /data/osm-postgresql:/var/lib/postgresql homme/openstreetmap-tiles \
          startdb startservices
+
+Run the CLI for debugging and starting services manually:
+  docker run --rm -P -ti -v /data/osm-postgresql:/var/lib/postgresql homme/openstreetmap-tiles \
+         cli 
+  
+If you want to keep the rendered tiles: mount a volume with "-v /data/osm-renderd-tiles:/var/lib/mod_tile"
 
 For further information run the cli and look at /usr/local/share/doc/README.md.
