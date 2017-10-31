@@ -20,8 +20,8 @@ The container runs Ubuntu 14.04 (Trusty) and is based on the
 [phusion/baseimage-docker](https://github.com/phusion/baseimage-docker).  It
 includes:
 
-* Postgresql 9.3
-* Apache 2.2
+* Postgresql 9.5
+* Apache 2.4
 * The latest [Osm2pgsql](http://wiki.openstreetmap.org/wiki/Osm2pgsql) code (at
   the time of image creation)
 * The latest [Mapnik](http://mapnik.org/) code (at the time of image creation)

@@ -23,15 +23,15 @@ startdb () {
 
 initdb () {
     echo "Initialising postgresql"
-    if [ -d /var/lib/postgresql/9.3/main ] && [ $( ls -A /var/lib/postgresql/9.3/main | wc -c ) -ge 0 ]
+    if [ -d /var/lib/postgresql/9.5/main ] && [ $( ls -A /var/lib/postgresql/9.5/main | wc -c ) -ge 0 ]
     then
-        die "Initialisation failed: the directory is not empty: /var/lib/postgresql/9.3/main"
+        die "Initialisation failed: the directory is not empty: /var/lib/postgresql/9.5/main"
     fi
 
-    mkdir -p /var/lib/postgresql/9.3/main && chown -R postgres /var/lib/postgresql/
-    sudo -u postgres -i /usr/lib/postgresql/9.3/bin/initdb --pgdata /var/lib/postgresql/9.3/main
-    ln -s /etc/ssl/certs/ssl-cert-snakeoil.pem /var/lib/postgresql/9.3/main/server.crt
-    ln -s /etc/ssl/private/ssl-cert-snakeoil.key /var/lib/postgresql/9.3/main/server.key
+    mkdir -p /var/lib/postgresql/9.5/main && chown -R postgres /var/lib/postgresql/
+    sudo -u postgres -i /usr/lib/postgresql/9.5/bin/initdb --pgdata /var/lib/postgresql/9.5/main
+    ln -s /etc/ssl/certs/ssl-cert-snakeoil.pem /var/lib/postgresql/9.5/main/server.crt
+    ln -s /etc/ssl/private/ssl-cert-snakeoil.key /var/lib/postgresql/9.5/main/server.key
 }
 
 createuser () {
@@ -49,22 +49,21 @@ createdb () {
     setuser postgres createdb -O www-data $dbname
 
     # Install the Postgis schema
-    $asweb psql -d $dbname -f /usr/share/postgresql/9.3/contrib/postgis-2.1/postgis.sql
+    $asweb psql -d $dbname -f /usr/share/postgresql/9.5/contrib/postgis-2.2/postgis.sql
+    $asweb psql -d $dbname -f /usr/share/postgresql/9.5/contrib/postgis-2.2/spatial_ref_sys.sql
 
     $asweb psql -d $dbname -c 'CREATE EXTENSION HSTORE;'
 
     # Set the correct table ownership
     $asweb psql -d $dbname -c 'ALTER TABLE geometry_columns OWNER TO "www-data"; ALTER TABLE spatial_ref_sys OWNER TO "www-data";'
 
-    # Add the 900913 Spatial Reference System
-    $asweb psql -d $dbname -f /usr/local/share/osm2pgsql/900913.sql
 }
 
 import () {
     # Find the most recent import.pbf or import.osm
-    import=$( ls -1t /data/import.pbf /data/import.osm 2>/dev/null | head -1 )
+    import=$( ls -1t /data/import/import.pbf /data/import/import.osm 2>/dev/null | head -1 )
     test -n "${import}" || \
-        die "No import file present: expected /data/import.osm or /data/import.pbf"
+        die "No import file present: expected /data/import/import.osm or /data/import/import.pbf"
 
     echo "Importing ${import} into gis"
     echo "$OSM_IMPORT_CACHE" | grep -P '^[0-9]+$' || \
@@ -78,7 +77,8 @@ import () {
         number_processes=8
     fi
 
-    $asweb osm2pgsql --slim --hstore --cache $OSM_IMPORT_CACHE --database gis --number-processes $number_processes $import
+    $asweb osm2pgsql --slim -G --hstore --cache $OSM_IMPORT_CACHE --tag-transform-script /usr/local/src/openstreetmap-carto/scripts/lua/openstreetmap-carto.lua --database gis --number-processes $number_processes -S /usr/local/src/openstreetmap-carto/openstreetmap-carto.style  $import
+
 }
 
 dropdb () {

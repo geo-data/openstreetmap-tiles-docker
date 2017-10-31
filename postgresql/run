@@ -8,6 +8,6 @@
 # permissions setting.
 chown -R postgres /var/lib/postgresql/ || exit 1
 
-exec /sbin/setuser postgres /usr/lib/postgresql/9.3/bin/postgres \
-    -D /var/lib/postgresql/9.3/main \
-    -c config_file=/etc/postgresql/9.3/main/postgresql.conf
+exec /sbin/setuser postgres /usr/lib/postgresql/9.5/bin/postgres \
+    -D /var/lib/postgresql/9.5/main \
+    -c config_file=/etc/postgresql/9.5/main/postgresql.conf
